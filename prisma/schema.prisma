@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id             Int       @id @default(autoincrement())
+  nome           String
+  email          String    @unique
+  senha          String
+  nivelPermissao String    @default("estoquista") // administrador, estoquista, financeiro
+  movimentacoes  Movimentacao[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Fornecedor {
+  id          Int       @id @default(autoincrement())
+  nome        String
+  email       String
+  telefone    String
+  endereco    String
+  produtos    Produto[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Produto {
+  id                Int       @id @default(autoincrement())
+  nome              String
+  descricao         String
+  quantidadeEstoque Int       @default(0)
+  quantidadeMinima  Int       @default(0) // Estoque mínimo antes do alerta
+  preco             Float
+  fornecedorId      Int
+  fornecedor        Fornecedor @relation(fields: [fornecedorId], references: [id])
+  movimentacoes     Movimentacao[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Movimentacao {
+  id                Int       @id @default(autoincrement())
+  tipo              String    // "entrada" ou "saida"
+  quantidade        Int
+  produtoId         Int
+  produto           Produto   @relation(fields: [produtoId], references: [id])
+  usuarioId         Int
+  usuario           Usuario   @relation(fields: [usuarioId], references: [id])
+  observacao        String?   // Campo opcional para detalhes
+  dataMovimentacao  DateTime  @default(now())
+}
